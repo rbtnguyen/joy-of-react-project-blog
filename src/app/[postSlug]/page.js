@@ -1,26 +1,62 @@
-import React from 'react';
+import React, { cache } from "react";
 
-import BlogHero from '@/components/BlogHero';
+import BlogHero from "@/components/BlogHero";
+import { MDXRemote } from "next-mdx-remote/rsc";
+import styles from "./postSlug.module.css";
+import { loadBlogPost } from "@/helpers/file-helpers";
+import CodeSnippet from "@/components/CodeSnippet";
+import { notFound } from "next/navigation";
+// import DivisionGroupsDemo from "@/components/DivisionGroupsDemo";
+import dynamic from "next/dynamic";
+const DivisionGroupsDemo = dynamic(() =>
+  import("@/components/DivisionGroupsDemo"),
+);
 
-import styles from './postSlug.module.css';
+const CircularColorsDemo = dynamic(() =>
+  import("@/components/CircularColorsDemo"),
+);
 
-function BlogPost() {
+const cacheLoadBlogPost = cache(loadBlogPost);
+
+async function BlogPost({ params }) {
+  const paramsResult = await params;
+  const postSlug = paramsResult.postSlug;
+  let blogPost;
+  try {
+    blogPost = await cacheLoadBlogPost(postSlug);
+  } catch (e) {
+    console.log("error", e);
+    notFound();
+  }
+
   return (
     <article className={styles.wrapper}>
       <BlogHero
-        title="Example post!"
-        publishedOn={new Date()}
+        title={blogPost.frontmatter.title}
+        publishedOn={blogPost.frontmatter.publishedOn}
       />
       <div className={styles.page}>
-        <p>This is where the blog post will go!</p>
-        <p>
-          You will need to use <em>MDX</em> to render all of
-          the elements created from the blog post in this
-          spot.
-        </p>
+        <MDXRemote
+          source={blogPost.content}
+          components={{
+            pre: CodeSnippet,
+            DivisionGroupsDemo,
+            CircularColorsDemo,
+          }}
+        />
       </div>
     </article>
   );
+}
+
+export async function generateMetadata({ params }) {
+  const paramsResult = await params;
+  const postSlug = paramsResult.postSlug;
+  const blogPost = await cacheLoadBlogPost(postSlug);
+  return {
+    title: blogPost.frontmatter.title,
+    description: blogPost.frontmatter.abstract,
+  };
 }
 
 export default BlogPost;
