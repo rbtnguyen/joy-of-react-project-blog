@@ -10,6 +10,7 @@ import styles from "./Header.module.css";
 import Cookie from "js-cookie";
 
 import { LIGHT_TOKENS, DARK_TOKENS } from "@/constants";
+import Link from "next/link";
 
 function Header({ initialTheme, className, ...delegated }) {
   const [theme, setTheme] = React.useState(initialTheme);
@@ -38,14 +39,16 @@ function Header({ initialTheme, className, ...delegated }) {
 
       <div className={styles.actions}>
         <button className={styles.action}>
-          <Rss
-            size="1.5rem"
-            style={{
-              // Optical alignment
-              transform: "translate(2px, -2px)",
-            }}
-          />
-          <VisuallyHidden>View RSS feed</VisuallyHidden>
+          <Link href="/rss.xml">
+            <Rss
+              size="1.5rem"
+              style={{
+                // Optical alignment
+                transform: "translate(2px, -2px)",
+              }}
+            />
+            <VisuallyHidden>View RSS feed</VisuallyHidden>
+          </Link>
         </button>
         <button className={styles.action} onClick={handleClick}>
           {theme === "light" ? <Sun size="1.5rem" /> : <Moon size="1.5rem" />}
